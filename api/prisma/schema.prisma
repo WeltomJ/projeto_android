@@ -1,0 +1,173 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "mysql"
+    url      = env("DATABASE_URL")
+}
+
+model usuario {
+    id            Int      @id @default(autoincrement())
+    email         String   @unique
+    nome          String
+    senha         String?  @db.Text
+    telefone      String?
+    foto          String?  @db.Text
+    criado_em     DateTime @default(now())
+    atualizado_em DateTime @updatedAt
+
+    avaliacoes   avaliacao[]
+    lembretes    lembrete[]
+    favoritos    favorito[]
+}
+
+model locador {
+    id            Int      @id @default(autoincrement())
+    email         String   @unique
+    nome          String
+    senha         String?  @db.Text
+    telefone      String?
+    foto          String?  @db.Text
+    criado_em     DateTime @default(now())
+    atualizado_em DateTime @updatedAt
+
+    locais       local[]
+}
+
+model local {
+    id                   Int      @id @default(autoincrement())
+    dono_id              Int
+    nome                 String
+    descricao            String?  @db.Text
+    endereco_logradouro  String
+    endereco_numero      String?
+    endereco_complemento String?
+    endereco_bairro      String?
+    endereco_cidade      String
+    endereco_estado      String
+    endereco_cep         String?
+    endereco_pais        String   @default("BR")
+    latitude             Float?
+    longitude            Float?
+    telefone_contato     String?
+    email_contato        String?
+    site                 String?
+    criado_em            DateTime @default(now())
+    atualizado_em        DateTime @updatedAt
+
+    dono         locador            @relation(fields: [dono_id], references: [id])
+    redes redes[]
+    medias       media[]
+    avaliacoes   avaliacao[]
+    horarios     horario_abertura[]
+    amenidades   local_amenidade[]
+    favoritos    favorito[]
+    lembrete     lembrete[]
+
+    @@index([latitude, longitude])
+}
+
+model media {
+    id        Int       @id @default(autoincrement())
+    local_id  Int
+    url       String    @db.Text
+    tipo      MediaType @default(IMG)
+    ordem     Int       @default(0)
+    criado_em DateTime  @default(now())
+
+    local local @relation(fields: [local_id], references: [id])
+}
+
+enum MediaType {
+    IMG
+    VID
+}
+
+model avaliacao {
+    id            Int      @id @default(autoincrement())
+    usuario_id    Int
+    local_id      Int
+    nota          Int
+    comentario    String?  @db.Text
+    criado_em     DateTime @default(now())
+    atualizado_em DateTime @updatedAt
+
+    usuario usuario @relation(fields: [usuario_id], references: [id])
+    local   local   @relation(fields: [local_id], references: [id])
+
+    @@index([local_id])
+    @@index([usuario_id])
+}
+
+model lembrete {
+    id         Int      @id @default(autoincrement())
+    usuario_id Int
+    local_id   Int?
+    titulo     String
+    descricao  String?  @db.Text
+    lembrar_em DateTime
+    concluido  Boolean  @default(false)
+    criado_em  DateTime @default(now())
+
+    usuario usuario @relation(fields: [usuario_id], references: [id])
+    local   local?  @relation(fields: [local_id], references: [id])
+
+    @@index([usuario_id])
+}
+
+model favorito {
+    id         Int      @id @default(autoincrement())
+    usuario_id Int
+    local_id   Int
+    criado_em  DateTime @default(now())
+
+    usuario usuario @relation(fields: [usuario_id], references: [id])
+    local   local   @relation(fields: [local_id], references: [id])
+
+    @@unique([usuario_id, local_id])
+}
+
+model amenidade {
+    id        Int      @id @default(autoincrement())
+    nome      String   @unique
+    criado_em DateTime @default(now())
+
+    local_amenidades local_amenidade[]
+}
+
+model local_amenidade {
+    id           Int @id @default(autoincrement())
+    local_id     Int
+    amenidade_id Int
+
+    local     local     @relation(fields: [local_id], references: [id])
+    amenidade amenidade @relation(fields: [amenidade_id], references: [id])
+
+    @@unique([local_id, amenidade_id])
+}
+
+model horario_abertura {
+    id              Int     @id @default(autoincrement())
+    local_id        Int
+    dia             Int // 0 = domingo, 1 = segunda, ... 6 = sábado
+    hora_abertura   String // "HH:mm"
+    hora_fechamento String // "HH:mm"
+    fechado         Boolean @default(false)
+
+    local local @relation(fields: [local_id], references: [id])
+
+    @@index([local_id])
+}
+
+model redes {
+    id        Int      @id @default(autoincrement())
+    local_id  Int
+    instagram String?
+    facebook  String?
+    whatsapp  String?
+
+    local local @relation(fields: [local_id], references: [id])
+
+    @@index([local_id])
+}
