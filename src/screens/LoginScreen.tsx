@@ -8,6 +8,7 @@ import {
     KeyboardAvoidingView,
     Platform,
     ScrollView,
+    Image, 
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../utils/AuthContext';
@@ -15,6 +16,7 @@ import { useTheme } from '../utils/ThemeContext';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import ErrorModal from '../components/ErrorModal';
+const AppLogo = require('../../assets/logo_2.png');
 
 export default function LoginScreen() {
     const navigation = useNavigation();
@@ -62,6 +64,13 @@ export default function LoginScreen() {
                 keyboardShouldPersistTaps="handled"
             >
                 <View style={styles.content}>
+                    <Image
+                      source={AppLogo}
+                      style={styles.logo}
+                       resizeMode="contain"
+                    />
+
+                    
                     <Text style={[styles.title, { color: theme.text }]}>Bem-vindo</Text>
                     <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
                         Faça login para continuar
@@ -135,7 +144,15 @@ const styles = StyleSheet.create({
         flex: 1,
         padding: 24,
         justifyContent: 'center',
+        
     },
+   logo: {
+  width: 600,
+  height: 280,
+  position: 'absolute',
+  top: 90,           // distância do topo da tela
+  alignSelf: 'center',
+},
     title: {
         fontSize: 32,
         fontWeight: 'bold',
