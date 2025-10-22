@@ -20,13 +20,13 @@ export interface Theme {
 }
 
 export const lightTheme: Theme = {
-    primary: '#007AFF',
+    primary: '#24c4f0ff',
     primaryDark: '#0056CC',
     primaryLight: '#4DA2FF',
     background: '#F2F2F7',
     surface: '#FFFFFF',
     card: '#FFFFFF',
-    text: '#1C1C1E',
+    text: '#24c4f0ff',
     textSecondary: '#8E8E93',
     placeholder: '#C7C7CC',
     border: '#E5E5EA',

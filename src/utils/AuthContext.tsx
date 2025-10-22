@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage, { useAsyncStorage } from '@react-native-async-storage/async-storage';
 import { UsuarioService, Usuario, CreateUsuarioDto, LoginResponse } from '../services/Usuario.Service';
 
 interface LoginCredentials {
@@ -55,6 +55,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             setLoading(true);
             const response: LoginResponse = await UsuarioService.login(credentials.email, credentials.senha);
             setUser(response.user);
+            const token = response.accessToken; 
+            await AsyncStorage.setItem('acessToken',token);
+            setUser(response.user);
         } catch (error) {
             throw error;
         } finally {
@@ -71,7 +74,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             
             // Após registro, faz login automaticamente
             const loginResponse = await UsuarioService.login(data.email, data.senha);
+            const {accessToken} = loginResponse;
+             await AsyncStorage.setItem ('acessToken', accessToken);
             setUser(loginResponse.user);
+        
         } catch (error) {
             throw error;
         } finally {
