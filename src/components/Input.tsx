@@ -1,8 +1,7 @@
-import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import React from 'react';
 import { KeyboardTypeOptions, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '../utils/ThemeContext';
+import { FontAwesome } from '@expo/vector-icons';
 
 interface InputProps {
     value: string;
@@ -37,7 +36,14 @@ const Input: React.FC<InputProps> = ({
 
     return (
         <View style={styles.container}>
-            <View style={[styles.inputWrapper, { backgroundColor: theme.inputBackground, borderColor: error ? theme.error : theme.border }, style]}>
+            <View style={[
+                styles.inputWrapper, 
+                { 
+                    backgroundColor: theme.inputBackground, 
+                    borderColor: error ? theme.error : theme.border 
+                }, 
+                style
+            ]}>
                 <TextInput
                     style={[styles.input, { color: theme.text }]}
                     value={value}
@@ -51,8 +57,16 @@ const Input: React.FC<InputProps> = ({
                     editable={editable}
                 />
                 {rightIcon ? (
-                    <TouchableOpacity accessibilityRole='button' onPress={onRightIconPress} style={styles.rightIconHit}>
-                        <FontAwesomeIcon icon={rightIcon === 'eye' ? "eye" : "eye-slash"} size={18} color={theme.primary} />
+                    <TouchableOpacity 
+                        accessibilityRole='button' 
+                        onPress={onRightIconPress} 
+                        style={styles.rightIconHit}
+                    >
+                        <FontAwesome 
+                            name={rightIcon === 'eye' ? "eye" : "eye-slash"} 
+                            size={18} 
+                            color={theme.primary} 
+                        />
                     </TouchableOpacity>
                 ) : null}
             </View>

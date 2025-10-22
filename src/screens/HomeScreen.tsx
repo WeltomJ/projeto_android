@@ -5,6 +5,7 @@ import Cards from '../components/Cards';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../utils/AuthContext';
 import { useTheme } from '../utils/ThemeContext';
+import MapsView from '../components/MapView';
 
 const HomeScreen: React.FC = () => {
     const { user, logout } = useAuth();

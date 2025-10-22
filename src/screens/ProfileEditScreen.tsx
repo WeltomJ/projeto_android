@@ -42,7 +42,7 @@ const ProfileEditScreen: React.FC = () => {
             const updated = await UsuarioService.atualizar(user!.id, updateData);
             await updateUserLocal(updated);
             setSuccess('Dados atualizados com sucesso!');
-            setSenha(''); // Limpa a senha após salvar
+            setSenha('');
         } catch (e: any) {
             setError(e.message || 'Falha ao salvar dados');
         } finally { 
@@ -52,7 +52,7 @@ const ProfileEditScreen: React.FC = () => {
 
     return (
         <View style={{ flex: 1, backgroundColor: theme.background }}>
-            <Navbar title="Editar Perfil" />
+            <Navbar title="Editar Perfil" showBack={true} />
             <ScrollView contentContainerStyle={styles.container}>
                 <Input 
                     value={user?.email || ''} 

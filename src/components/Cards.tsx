@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { Animated, PanResponder, StyleSheet, Text, View } from 'react-native';
+import { useTheme } from '../utils/ThemeContext';
 
 interface Card {
     id: string;
@@ -15,6 +16,7 @@ const data: Card[] = [
 const SWIPE_THRESHOLD = 120;
 
 const Cards: React.FC = () => {
+    const { theme } = useTheme();
     const position = useRef(new Animated.ValueXY()).current;
     const [index, setIndex] = React.useState(0);
 
@@ -67,10 +69,15 @@ const Cards: React.FC = () => {
                 return (
                     <Animated.View
                         key={card.id}
-                        style={[styles.card, style as any, { zIndex: data.length - i }]}
+                        style={[
+                            styles.card,
+                            { backgroundColor: theme.surface, shadowColor: theme.shadow },
+                            style as any,
+                            { zIndex: data.length - i }
+                        ]}
                         {...(isTop ? panResponder.panHandlers : {})}
                     >
-                        <Text style={styles.text}>{card.text}</Text>
+                        <Text style={[styles.text, { color: theme.text }]}>{card.text}</Text>
                     </Animated.View>
                 );
             })
@@ -85,10 +92,8 @@ const styles = StyleSheet.create({
         position: 'absolute',
         width: '80%',
         height: '55%',
-        backgroundColor: '#fff',
         borderRadius: 16,
         elevation: 6,
-        shadowColor: '#000',
         shadowOpacity: 0.2,
         shadowRadius: 6,
         shadowOffset: { width: 0, height: 4 },

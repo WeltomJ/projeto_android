@@ -1,6 +1,7 @@
 export interface Theme {
     primary: string;
     primaryDark: string;
+    primaryLight: string;
     background: string;
     surface: string;
     card: string;
@@ -12,11 +13,16 @@ export interface Theme {
     success: string;
     warning: string;
     inputBackground: string;
+    shadow: string;
+    white: string;
+    black: string;
+    overlay: string;
 }
 
 export const lightTheme: Theme = {
     primary: '#007AFF',
     primaryDark: '#0056CC',
+    primaryLight: '#4DA2FF',
     background: '#F2F2F7',
     surface: '#FFFFFF',
     card: '#FFFFFF',
@@ -28,11 +34,16 @@ export const lightTheme: Theme = {
     success: '#34C759',
     warning: '#FF9500',
     inputBackground: '#FFFFFF',
+    shadow: '#000000',
+    white: '#FFFFFF',
+    black: '#000000',
+    overlay: 'rgba(0, 0, 0, 0.45)',
 };
 
 export const darkTheme: Theme = {
     primary: '#0A84FF',
     primaryDark: '#0066CC',
+    primaryLight: '#409CFF',
     background: '#000000',
     surface: '#1C1C1E',
     card: '#2C2C2E',
@@ -44,4 +55,8 @@ export const darkTheme: Theme = {
     success: '#30D158',
     warning: '#FF9F0A',
     inputBackground: '#1C1C1E',
+    shadow: '#000000',
+    white: '#FFFFFF',
+    black: '#000000',
+    overlay: 'rgba(0, 0, 0, 0.7)',
 };

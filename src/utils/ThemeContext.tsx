@@ -1,6 +1,7 @@
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { Appearance } from 'react-native';
 import { darkTheme, lightTheme, Theme } from '../styles/themes';
+import { GoogleMapsColorScheme } from 'expo-maps/build/google/GoogleMaps.types';
 
 type ThemeMode = 'light' | 'dark' | 'system';
 
@@ -9,6 +10,7 @@ interface ThemeContextType {
     themeMode: ThemeMode;
     setThemeMode: (mode: ThemeMode) => void;
     isDark: boolean;
+    getThemeMode: () => GoogleMapsColorScheme | any;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -33,7 +35,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     const theme = isDark ? darkTheme : lightTheme;
 
     return (
-        <ThemeContext.Provider value={{ theme, themeMode, setThemeMode, isDark }}>
+        <ThemeContext.Provider value={{ theme, themeMode, setThemeMode, isDark, getThemeMode: () => (themeMode === 'dark' ? 'DARK' : (themeMode === 'light' ? 'LIGHT' : 'FOLLOW_SYSTEM')) }}>
             {children}
         </ThemeContext.Provider>
     );

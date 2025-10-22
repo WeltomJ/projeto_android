@@ -15,6 +15,7 @@ import { useTheme } from '../utils/ThemeContext';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import ErrorModal from '../components/ErrorModal';
+import ThemeToggle from '../components/ThemeToggle';
 
 export default function LoginScreen() {
     const navigation = useNavigation();
@@ -62,6 +63,7 @@ export default function LoginScreen() {
                 keyboardShouldPersistTaps="handled"
             >
                 <View style={styles.content}>
+                    <ThemeToggle />
                     <Text style={[styles.title, { color: theme.text }]}>Bem-vindo</Text>
                     <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
                         Faça login para continuar

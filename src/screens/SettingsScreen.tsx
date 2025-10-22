@@ -103,7 +103,9 @@ export default function SettingsScreen() {
                         style={[styles.editButton, { backgroundColor: theme.primary }]}
                         onPress={goToProfileEdit}
                     >
-                        <Text style={styles.editButtonText}>Editar Perfil</Text>
+                        <Text style={[styles.editButtonText, { color: theme.white }]}>
+                            Editar Perfil
+                        </Text>
                     </TouchableOpacity>
                 </View>
 
@@ -164,7 +166,6 @@ const styles = StyleSheet.create({
         marginTop: 8,
     },
     editButtonText: {
-        color: '#fff',
         fontWeight: '600',
         fontSize: 16,
     },

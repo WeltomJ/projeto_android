@@ -1,7 +1,4 @@
-import { faMoon } from '@fortawesome/free-regular-svg-icons';
-import { faMobile, faSun } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import React from 'react';
+import { MaterialIcons } from '@expo/vector-icons';
 import { StyleSheet, TouchableOpacity } from 'react-native';
 import { useTheme } from '../utils/ThemeContext';
 
@@ -21,16 +18,16 @@ const ThemeToggle: React.FC = () => {
         }
     };
 
-    const getModeIcon = () => {
+const getModeIcon = () => {
         switch (themeMode) {
             case 'light':
-                return "sun";
+                return "wb-sunny";
             case 'dark':
-                return "moon";
+                return "nightlight-round";
             case 'system':
-                return "mobile";
+                return "settings-brightness";
             default:
-                return "mobile";
+                return "settings-brightness";
         }
     };
 
@@ -44,7 +41,7 @@ const ThemeToggle: React.FC = () => {
             onPress={handlePress}
             activeOpacity={0.7}
         >
-            <FontAwesomeIcon icon={getModeIcon()} size={18} color={theme.text} />
+            <MaterialIcons name={getModeIcon()} size={18} color={theme.text} />
         </TouchableOpacity>
     );
 };
