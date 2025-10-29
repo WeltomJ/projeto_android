@@ -58,8 +58,8 @@ const MainTabs = () => {
                     ),
                 }}
             />
-            <Tab.Screen
-                name="Maps"
+            {/*<Tab.Screen
+                name="Maps" 
                 component={MapsScreen}
                 options={{
                     tabBarLabel: 'Mapas',
@@ -67,7 +67,7 @@ const MainTabs = () => {
                         <FontAwesome name="map" size={size} color={color} />
                     ),
                 }}
-            />
+            />*/}
             <Tab.Screen
                 name="Favorites"
                 component={FavoritesScreen}

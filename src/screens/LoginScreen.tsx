@@ -8,7 +8,7 @@ import {
     KeyboardAvoidingView,
     Platform,
     ScrollView,
-    Image, 
+    Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../utils/AuthContext';
@@ -17,8 +17,6 @@ import Input from '../components/Input';
 import Button from '../components/Button';
 import ErrorModal from '../components/ErrorModal';
 import ThemeToggle from '../components/ThemeToggle';
-
-const AppLogo = require('../../assets/logo_2.png');
 
 export default function LoginScreen() {
     const navigation = useNavigation();
@@ -61,71 +59,77 @@ export default function LoginScreen() {
             style={[styles.container, { backgroundColor: theme.background }]}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-            <ScrollView
-                contentContainerStyle={styles.scrollContent}
-                keyboardShouldPersistTaps="handled"
-            >
-                <View style={styles.content}>
-                    <ThemeToggle />
-                    <Image
-                      source={AppLogo}
-                      style={styles.logo}
-                       resizeMode="contain"
-                    />
+            {/* Logo fixa no topo */}
+            <View style={styles.logoContainer}>
+                <Image
+                    source={require('../../assets/logo_2.png')}
+                    style={styles.logo}
+                    resizeMode="contain"
+                />
+            </View>
 
-                    
-                    <Text style={[styles.title, { color: theme.text }]}>Bem-vindo</Text>
-                    <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
-                        Faça login para continuar
-                    </Text>
+            {/* Conteúdo restante */}
+            <View style={{ flex: 1 }}>
+                <ScrollView
+                    contentContainerStyle={styles.scrollContent}
+                    keyboardShouldPersistTaps="handled"
+                >
+                    <View style={styles.content}>
+                        <ThemeToggle />
 
-                    <View style={styles.form}>
-                        <Input
-                            placeholder="Email"
-                            value={email}
-                            onChangeText={setEmail}
-                            keyboardType="email-address"
-                            autoCapitalize="none"
-                            autoCorrect={false}
-                            editable={!isLoading && !loading}
-                        />
-
-                        <Input
-                            placeholder="Senha"
-                            value={senha}
-                            onChangeText={setSenha}
-                            secureTextEntry
-                            autoCapitalize="none"
-                            editable={!isLoading && !loading}
-                        />
-
-                        <Button
-                            title={isLoading || loading ? 'Entrando...' : 'Entrar'}
-                            onPress={handleLogin}
-                            disabled={isLoading || loading}
-                        />
-
-                        {(isLoading || loading) && (
-                            <ActivityIndicator
-                                size="small"
-                                color={theme.primary}
-                                style={styles.loader}
-                            />
-                        )}
-                    </View>
-
-                    <View style={styles.footer}>
-                        <Text style={[styles.footerText, { color: theme.textSecondary }]}>
-                            Não tem uma conta?
+                        <Text style={[styles.title, { color: theme.text }]}>Bem-vindo</Text>
+                        <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
+                            Faça login para continuar
                         </Text>
-                        <TouchableOpacity onPress={goToRegister} disabled={isLoading || loading}>
-                            <Text style={[styles.linkText, { color: theme.primary }]}>
-                                Cadastre-se
+
+                        <View style={styles.form}>
+                            <Input
+                                placeholder="Email"
+                                value={email}
+                                onChangeText={setEmail}
+                                keyboardType="email-address"
+                                autoCapitalize="none"
+                                autoCorrect={false}
+                                editable={!isLoading && !loading}
+                            />
+
+                            <Input
+                                placeholder="Senha"
+                                value={senha}
+                                onChangeText={setSenha}
+                                secureTextEntry
+                                autoCapitalize="none"
+                                editable={!isLoading && !loading}
+                            />
+
+                            <Button
+                                title={isLoading || loading ? 'Entrando...' : 'Entrar'}
+                                onPress={handleLogin}
+                                disabled={isLoading || loading}
+                            />
+
+                            {(isLoading || loading) && (
+                                <ActivityIndicator
+                                    size="small"
+                                    color={theme.primary}
+                                    style={styles.loader}
+                                />
+                            )}
+                        </View>
+
+                        <View style={styles.footer}>
+                            <Text style={[styles.footerText, { color: theme.textSecondary }]}>
+                                Não tem uma conta?
                             </Text>
-                        </TouchableOpacity>
+                            <TouchableOpacity onPress={goToRegister} disabled={isLoading || loading}>
+                                <Text style={[styles.linkText, { color: theme.primary }]}>
+                                    Cadastre-se
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
-                </View>
-            </ScrollView>
+                </ScrollView>
+            </View>
 
             <ErrorModal
                 visible={!!error}
@@ -140,22 +144,29 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
     },
-    scrollContent: {
-        flexGrow: 1,
-    },
-    content: {
-        flex: 1,
-        padding: 24,
-        justifyContent: 'center',
+   logoContainer: {
+    position: 'absolute', 
+    top: 70,              
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    zIndex: 1,            
+},
+    logo: {
+        width: 120,
+        height: 180,
+        paddingBottom: 50,
         
     },
-   logo: {
-  width: 600,
-  height: 280,
-  position: 'absolute',
-  top: 90,           // distância do topo da tela
-  alignSelf: 'center',
-},
+    scrollContent: {
+        flexGrow: 1,
+        justifyContent: 'center', 
+        alignItems: 'center',     
+        paddingHorizontal: 24,
+    },
+    content: {
+        width: '100%',
+    },
     title: {
         fontSize: 32,
         fontWeight: 'bold',
@@ -169,6 +180,7 @@ const styles = StyleSheet.create({
     },
     form: {
         marginBottom: 24,
+        width: '100%',
     },
     loader: {
         marginTop: 16,

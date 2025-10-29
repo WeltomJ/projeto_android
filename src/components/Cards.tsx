@@ -6,10 +6,10 @@ interface Card {
   id: string;
   title: string;
   description: string;
-  image: any; // agora aceita require()
+  image: any; 
 }
 
-// Utilize require() para imagens locais na pasta assets/images
+
 const data: Card[] = [
   { 
     id: '1', 
@@ -43,8 +43,8 @@ const data: Card[] = [
   },
   { 
     id: '6', 
-    title: 'Festa do Cupuaçu', 
-    description: 'Celebração gastronômica do fruto amazônico, com pratos, doces e shows (em Rio Preto da Eva, perto de Manaus).', 
+    title: 'Festa teste', 
+    description: 'Localização : Rua frei luiz de souza\n Valor : 30 reais', 
     image: require('../../assets/8b7de8d210ffbf7b5ca684701e71e208.jpg') 
   },
   { 
@@ -88,7 +88,10 @@ const Cards: React.FC = () => {
       setIndex(i => i + 1);
     });
   };
-
+const handleFavorite = (card: Card) => {
+    console.log('Favoritado:', card.title);
+    // salvar no banco de dados 
+  };
   const renderCards = () =>
     data
       .slice(index)
@@ -106,7 +109,10 @@ const Cards: React.FC = () => {
             {...(isTop ? panResponder.panHandlers : {})}
           >
             <Image source={card.image} style={styles.cardImage} />
-
+  {/* Ícone de favorito */}
+            <TouchableOpacity style={styles.favoriteIcon} onPress={() => handleFavorite(card)}>
+              <Text style={{ fontSize: 24 }}>⭐</Text>
+            </TouchableOpacity>
             {/* Gradiente para legibilidade do texto */}
             <LinearGradient
               colors={['transparent', 'rgba(0,0,0,0.6)', 'rgba(0,0,0,0.8)']}
@@ -128,10 +134,10 @@ const Cards: React.FC = () => {
 
       {/* Botões fora do card */}
       <View style={styles.buttonsContainer}>
-        <TouchableOpacity style={[styles.button, { backgroundColor: 'red' }]} onPress={() => swipeCard(-1)}>
+        <TouchableOpacity style={[styles.button, { backgroundColor: '#f34545' }]} onPress={() => swipeCard(-1)}>
           <Text style={styles.buttonText}>✖️</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.button, { backgroundColor: 'green' }]} onPress={() => swipeCard(1)}>
+        <TouchableOpacity style={[styles.button, { backgroundColor: '#4f9cd0ff' }]} onPress={() => swipeCard(1)}>
           <Text style={styles.buttonText}>❤️</Text>
         </TouchableOpacity>
       </View>
@@ -165,9 +171,18 @@ const styles = StyleSheet.create({
   cardInfo: { padding: 16 },
   cardTitle: { fontSize: 22, fontWeight: '700', color: '#fff' },
   cardDescription: { fontSize: 16, color: '#fff', marginTop: 4 },
-  buttonsContainer: { position: 'absolute', bottom: 40, flexDirection: 'row', justifyContent: 'space-around', width: '80%' },
+ buttonsContainer: {
+    position: 'absolute',
+    bottom: -2,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '140%',
+    zIndex: 1000,
+},
+
   button: { width: 70, height: 50, borderRadius: 25, alignItems: 'center', justifyContent: 'center' },
   buttonText: { color: '#fff', fontSize: 22, fontWeight: 'bold' },
+  favoriteIcon: { position: 'absolute', top: 10, right: 10, zIndex: 3 },
 });
 
 export default Cards;
