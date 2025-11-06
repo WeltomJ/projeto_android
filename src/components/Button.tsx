@@ -46,6 +46,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.15,
         shadowRadius: 4,
         elevation: 3,
+        zIndex:1000,
     },
     text: {
         fontSize: 16,

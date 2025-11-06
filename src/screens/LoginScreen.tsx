@@ -20,7 +20,7 @@ import ThemeToggle from '../components/ThemeToggle';
 import { GoogleAuthService } from '../services/GoogleAuth.Service';
 import { FontAwesome } from '@expo/vector-icons';
 
-const AppLogo = require('../../assets/logo_2.png');
+const AppLogo = require('../../assets/logo.png'); // Ajuste o caminho conforme necessário
 
 export default function LoginScreen() {
     const navigation = useNavigation();
@@ -216,6 +216,7 @@ const styles = StyleSheet.create({
     },
     form: {
         marginBottom: 24,
+        width: '100%',
     },
     loader: {
         marginTop: 16,
