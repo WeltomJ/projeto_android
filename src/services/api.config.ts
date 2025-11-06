@@ -1,9 +1,11 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { URL_API, PORT_API } from '@env';
+import { URL_API, URL_UPLOADS } from '@env';
 
-const URL_BASE = `http://${URL_API}:${PORT_API}`;
+const URL_BASE = `${URL_API}`;
 
+console.log('Variável de ambiente URL_API:', URL_API);
+console.log('URL base construída:', URL_UPLOADS);
 console.log('URL da API configurada:', URL_BASE);
 
 const api = axios.create({
@@ -35,7 +37,11 @@ const processQueue = (error: Error | null, token: string | null = null) => {
 // Request interceptor
 api.interceptors.request.use(
     async (config: InternalAxiosRequestConfig) => {
-        const token = await AsyncStorage.getItem('accessToken');
+        // Verifica primeiro o token do usuário, depois do locador
+        let token = await AsyncStorage.getItem('accessToken');
+        if (!token) {
+            token = await AsyncStorage.getItem('locadorToken');
+        }
 
         if (token && config.headers) {
             config.headers.Authorization = `Bearer ${token}`;
@@ -73,10 +79,20 @@ api.interceptors.response.use(
             originalRequest._retry = true;
             isRefreshing = true;
 
-            const refreshToken = await AsyncStorage.getItem('refreshToken');
+            // Verifica se é refresh de usuário ou locador
+            let refreshToken = await AsyncStorage.getItem('refreshToken');
+            let isLocador = false;
+            
+            if (!refreshToken) {
+                refreshToken = await AsyncStorage.getItem('locadorRefreshToken');
+                isLocador = true;
+            }
 
             if (!refreshToken) {
-                await AsyncStorage.multiRemove(['accessToken', 'refreshToken', 'user']);
+                await AsyncStorage.multiRemove([
+                    'accessToken', 'refreshToken', 'user',
+                    'locadorToken', 'locadorRefreshToken', 'locador'
+                ]);
                 return Promise.reject(error);
             }
 
@@ -87,8 +103,13 @@ api.interceptors.response.use(
 
                 const { accessToken, refreshToken: newRefreshToken } = response.data;
 
-                await AsyncStorage.setItem('accessToken', accessToken);
-                await AsyncStorage.setItem('refreshToken', newRefreshToken);
+                if (isLocador) {
+                    await AsyncStorage.setItem('locadorToken', accessToken);
+                    await AsyncStorage.setItem('locadorRefreshToken', newRefreshToken);
+                } else {
+                    await AsyncStorage.setItem('accessToken', accessToken);
+                    await AsyncStorage.setItem('refreshToken', newRefreshToken);
+                }
 
                 if (originalRequest.headers) {
                     originalRequest.headers.Authorization = `Bearer ${accessToken}`;
@@ -99,7 +120,11 @@ api.interceptors.response.use(
                 return api(originalRequest);
             } catch (refreshError) {
                 processQueue(refreshError as Error, null);
-                await AsyncStorage.multiRemove(['accessToken', 'refreshToken', 'user']);
+                if (isLocador) {
+                    await AsyncStorage.multiRemove(['locadorToken', 'locadorRefreshToken', 'locador']);
+                } else {
+                    await AsyncStorage.multiRemove(['accessToken', 'refreshToken', 'user']);
+                }
                 return Promise.reject(refreshError);
             } finally {
                 isRefreshing = false;

@@ -23,7 +23,7 @@ const HomeScreen: React.FC = () => {
 
 const styles = StyleSheet.create({
     container: { flex: 1 },
-    inner: { flex: 1, padding: 24, justifyContent: 'center', alignItems: 'center' },
+    inner: { flex: 1 },
     title: { fontSize: 20, fontWeight: '600', marginBottom: 16 },
 });
 

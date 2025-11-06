@@ -16,6 +16,8 @@ interface AuthContextData {
     signOut: () => Promise<void>;
     logout: () => Promise<void>;
     updateUserLocal: (user: Usuario) => Promise<void>;
+    setUser: (user: Usuario | null) => void;
+    setToken: (token: string) => Promise<void>;
     isAuthenticated: boolean;
 }
 
@@ -89,10 +91,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         try {
             setLoading(true);
             await UsuarioService.logout();
+            
+            // Limpar TODO o cache do AsyncStorage relacionado ao usuário
+            await AsyncStorage.multiRemove([
+                'accessToken',
+                'refreshToken',
+                'user',
+                'acessToken', // Typo que existe no código
+            ]);
+            
             setUser(null);
+            
+            console.log('✅ Cache limpo completamente no logout');
         } catch (error) {
             console.error('Erro ao fazer logout:', error);
-            throw error;
+            // Mesmo com erro, limpa dados locais
+            await AsyncStorage.multiRemove([
+                'accessToken',
+                'refreshToken',
+                'user',
+                'acessToken',
+            ]);
+            setUser(null);
         } finally {
             setLoading(false);
         }
@@ -103,6 +123,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const updateUserLocal = async (updatedUser: Usuario) => {
         setUser(updatedUser);
         await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
+    };
+
+    const setUserAndSave = (newUser: Usuario | null) => {
+        setUser(newUser);
+        if (newUser) {
+            AsyncStorage.setItem('user', JSON.stringify(newUser));
+        }
+    };
+
+    const setTokenAndSave = async (token: string) => {
+        await AsyncStorage.setItem('accessToken', token);
     };
 
     return (
@@ -116,6 +147,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 signOut,
                 logout,
                 updateUserLocal,
+                setUser: setUserAndSave,
+                setToken: setTokenAndSave,
                 isAuthenticated: !!user,
             }}
         >

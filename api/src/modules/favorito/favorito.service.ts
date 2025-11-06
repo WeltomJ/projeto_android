@@ -23,12 +23,6 @@ export class FavoritoService {
             data,
             include: {
                 local: {
-                    select: {
-                        id: true,
-                        nome: true,
-                        endereco_cidade: true,
-                        endereco_estado: true,
-                    },
                     include: {
                         medias: { take: 1 },
                     },

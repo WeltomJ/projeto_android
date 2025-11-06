@@ -1,23 +1,23 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../utils/ThemeContext';
 import { useAuth } from '../utils/AuthContext';
 import Navbar from '../components/Navbar';
 import { FavoritoService, Favorito } from '../services/Favorito.Service';
-import { LocalService, Local } from '../services/Local.Service';
+import { LocalService } from '../services/Local.Service';
+import { Local } from '../../types/Local';
 import { FontAwesome } from '@expo/vector-icons';
 
 export default function FavoritesScreen() {
     const { theme } = useTheme();
     const { user } = useAuth();
+    const navigation = useNavigation<any>();
     const [favorites, setFavorites] = useState<(Favorito & { local?: Local })[]>([]);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
 
-    useEffect(() => {
-        loadFavorites();
-    }, []);
-
-    const loadFavorites = async () => {
+    const loadFavorites = useCallback(async () => {
         if (!user) return;
 
         try {
@@ -42,7 +42,20 @@ export default function FavoritesScreen() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [user]);
+
+    // Recarrega favoritos sempre que a tela ganha foco
+    useFocusEffect(
+        useCallback(() => {
+            loadFavorites();
+        }, [loadFavorites])
+    );
+
+    const handleRefresh = useCallback(async () => {
+        setRefreshing(true);
+        await loadFavorites();
+        setRefreshing(false);
+    }, [loadFavorites]);
 
     const removeFavorite = async (id: number) => {
         try {
@@ -54,24 +67,42 @@ export default function FavoritesScreen() {
     };
 
     const renderItem = ({ item }: { item: Favorito & { local?: Local } }) => (
-        <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+        <TouchableOpacity 
+            style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
+            onPress={() => navigation.navigate('LocalDetails', { localId: item.local_id })}
+            activeOpacity={0.7}
+        >
+            <View style={styles.iconContainer}>
+                <FontAwesome name="heart" size={24} color={theme.primary} />
+            </View>
             <View style={styles.cardContent}>
-                <Text style={[styles.cardTitle, { color: theme.text }]}>
+                <Text style={[styles.cardTitle, { color: theme.text }]} numberOfLines={1}>
                     {item.local?.nome || 'Local não encontrado'}
                 </Text>
                 {item.local?.endereco_cidade && (
-                    <Text style={[styles.cardSubtitle, { color: theme.textSecondary }]}>
-                        {item.local.endereco_cidade}, {item.local.endereco_estado}
+                    <View style={styles.locationRow}>
+                        <FontAwesome name="map-marker" size={14} color={theme.textSecondary} />
+                        <Text style={[styles.cardSubtitle, { color: theme.textSecondary }]} numberOfLines={1}>
+                            {item.local.endereco_cidade}, {item.local.endereco_estado}
+                        </Text>
+                    </View>
+                )}
+                {item.local?.descricao && (
+                    <Text style={[styles.cardDescription, { color: theme.textSecondary }]} numberOfLines={2}>
+                        {item.local.descricao}
                     </Text>
                 )}
             </View>
             <TouchableOpacity
-                onPress={() => removeFavorite(item.id)}
-                style={styles.deleteButton}
+                onPress={(e) => {
+                    e.stopPropagation();
+                    removeFavorite(item.id);
+                }}
+                style={[styles.deleteButton, { backgroundColor: theme.background }]}
             >
-                <FontAwesome name="trash" size={20} color={theme.error} />
+                <FontAwesome name="trash" size={18} color={theme.error} />
             </TouchableOpacity>
-        </View>
+        </TouchableOpacity>
     );
 
     if (loading) {
@@ -104,6 +135,14 @@ export default function FavoritesScreen() {
                     renderItem={renderItem}
                     keyExtractor={(item) => item.id.toString()}
                     contentContainerStyle={styles.listContent}
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={refreshing}
+                            onRefresh={handleRefresh}
+                            colors={[theme.primary]}
+                            tintColor={theme.primary}
+                        />
+                    }
                 />
             )}
         </View>
@@ -127,28 +166,51 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         padding: 16,
-        borderRadius: 12,
-        marginBottom: 12,
+        borderRadius: 16,
+        marginBottom: 16,
         borderWidth: 1,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 8,
+        elevation: 5,
+        minHeight: 80,
+    },
+    iconContainer: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 12,
     },
     cardContent: {
         flex: 1,
+        marginRight: 8,
     },
     cardTitle: {
-        fontSize: 16,
-        fontWeight: '600',
+        fontSize: 18,
+        fontWeight: '700',
+        marginBottom: 6,
+    },
+    locationRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
         marginBottom: 4,
     },
     cardSubtitle: {
         fontSize: 14,
+        flex: 1,
+    },
+    cardDescription: {
+        fontSize: 13,
+        marginTop: 4,
+        lineHeight: 18,
     },
     deleteButton: {
-        padding: 8,
+        padding: 10,
+        borderRadius: 20,
     },
     emptyText: {
         fontSize: 18,

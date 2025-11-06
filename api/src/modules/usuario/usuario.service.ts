@@ -44,6 +44,14 @@ export class UsuarioService {
         return this.sanitize(updated);
     }
 
+    async updateExpoPushToken(usuarioId: number, expoPushToken: string): Promise<usuario> {
+        const updated = await this.prisma.usuario.update({
+            where: { id: usuarioId },
+            data: { expo_push_token: expoPushToken }
+        });
+        return this.sanitize(updated);
+    }
+
 
     async remove(id: string): Promise<usuario> {
         const deleted = await this.prisma.usuario.delete({ where: { id: Number(id) } });

@@ -24,4 +24,12 @@ export class AuthController {
     async validate(@Body() body: { token: string }) {
         return this.authService.validateToken(body.token);
     }
+
+    @Post('google')
+    @HttpCode(HttpStatus.OK)
+    async googleLogin(
+        @Body() body: { idToken: string; tipo?: 'usuario' | 'locador' },
+    ) {
+        return this.authService.googleLogin(body.idToken, body.tipo || 'usuario');
+    }
 }

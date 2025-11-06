@@ -1,20 +1,23 @@
-import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View, Alert, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../utils/AuthContext';
 import { useTheme } from '../utils/ThemeContext';
 import { FontAwesome } from '@expo/vector-icons';
+import { GoogleAuthService } from '../services/GoogleAuth.Service';
 
 interface NavbarProps {
     title?: string;
     onAvatarPress?: () => void;
     showBack?: boolean;
+    showLogout?: boolean;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ title, onAvatarPress, showBack = false }) => {
+const Navbar: React.FC<NavbarProps> = ({ title, onAvatarPress, showBack = false, showLogout = false }) => {
     const { theme } = useTheme();
-    const { user } = useAuth();
+    const { user, signOut } = useAuth();
     const navigation = useNavigation<any>();
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
     
     const initials = user?.nome 
         ? user.nome.split(/\s+/).map(p => p[0]).slice(0, 2).join('').toUpperCase() 
@@ -28,6 +31,44 @@ const Navbar: React.FC<NavbarProps> = ({ title, onAvatarPress, showBack = false 
                 screen: 'Settings' 
             });
         }
+    };
+
+    const handleLogout = () => {
+        Alert.alert(
+            'Sair',
+            'Tem certeza que deseja sair da sua conta?',
+            [
+                {
+                    text: 'Cancelar',
+                    style: 'cancel',
+                },
+                {
+                    text: 'Sair',
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            setIsLoggingOut(true);
+                            
+                            // Fazer logout do Google se estiver logado
+                            try {
+                                await GoogleAuthService.signOut();
+                            } catch (error) {
+                                console.log('Não estava logado com Google');
+                            }
+                            
+                            // Fazer logout da aplicação
+                            await signOut();
+                        } catch (error) {
+                            Alert.alert(
+                                'Erro',
+                                'Não foi possível fazer logout. Tente novamente.'
+                            );
+                            setIsLoggingOut(false);
+                        }
+                    },
+                },
+            ]
+        );
     };
 
     return (
@@ -58,7 +99,20 @@ const Navbar: React.FC<NavbarProps> = ({ title, onAvatarPress, showBack = false 
                 {title || 'Onde É, Manaus?'}
             </Text>
             
-            <View style={styles.rightSpace} />
+            {showLogout ? (
+                isLoggingOut ? (
+                    <ActivityIndicator size="small" color={theme.primary} />
+                ) : (
+                    <TouchableOpacity 
+                        onPress={handleLogout} 
+                        style={styles.logoutButton}
+                    >
+                        <FontAwesome name="sign-out" size={20} color={theme.error} />
+                    </TouchableOpacity>
+                )
+            ) : (
+                <View style={styles.rightSpace} />
+            )}
         </View>
     );
 };
@@ -101,6 +155,10 @@ const styles = StyleSheet.create({
     },
     rightSpace: {
         width: 40,
+    },
+    logoutButton: {
+        padding: 8,
+        marginLeft: 8,
     },
 });
 

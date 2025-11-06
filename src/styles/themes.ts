@@ -1,5 +1,6 @@
 export interface Theme {
     primary: string;
+    secondary: string;
     primaryDark: string;
     primaryLight: string;
     background: string;
@@ -17,10 +18,12 @@ export interface Theme {
     white: string;
     black: string;
     overlay: string;
+    subtext: string;
 }
 
 export const lightTheme: Theme = {
     primary: '#24c4f0ff',
+    secondary: '#1E90FF',
     primaryDark: '#0056CC',
     primaryLight: '#4DA2FF',
     background: '#F2F2F7',
@@ -38,10 +41,12 @@ export const lightTheme: Theme = {
     white: '#FFFFFF',
     black: '#000000',
     overlay: 'rgba(0, 0, 0, 0.45)',
+    subtext: '#6e6e73',
 };
 
 export const darkTheme: Theme = {
     primary: '#0A84FF',
+    secondary: '#0066FF',
     primaryDark: '#0066CC',
     primaryLight: '#409CFF',
     background: '#000000',
@@ -59,4 +64,5 @@ export const darkTheme: Theme = {
     white: '#FFFFFF',
     black: '#000000',
     overlay: 'rgba(0, 0, 0, 0.7)',
+    subtext: '#8e8e93',
 };

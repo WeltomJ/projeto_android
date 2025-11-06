@@ -18,8 +18,9 @@ export const FavoritoService = {
             const response = await api.post<Favorito>('/favorito', dto);
             return response.data;
         } catch (error: any) {
+            // Apenas re-lança o erro sem logar (409 é tratado silenciosamente no componente)
             throw new ApiError(
-                error.response?.data?.message || 'Erro ao adicionar favorito',
+                error.response?.data?.message || error.message || 'Erro ao adicionar favorito',
                 error.response?.status || 500,
                 error.response?.data
             );

@@ -1,9 +1,13 @@
 import { Controller, Get, Post, Put, Delete, Body, Param, Query, Patch } from '@nestjs/common';
 import { LembreteService } from './lembrete.service';
+import { TaskSchedulerService } from '../../services/task-scheduler.service';
 
 @Controller('lembrete')
 export class LembreteController {
-    constructor(private lembreteService: LembreteService) { }
+    constructor(
+        private lembreteService: LembreteService,
+        private taskSchedulerService: TaskSchedulerService,
+    ) { }
 
     @Post()
     criar(@Body() data: any) {
@@ -42,5 +46,10 @@ export class LembreteController {
     @Delete(':id')
     remover(@Param('id') id: string) {
         return this.lembreteService.remover(+id);
+    }
+
+    @Post('testar-notificacao/:usuarioId')
+    testarNotificacao(@Param('usuarioId') usuarioId: string) {
+        return this.taskSchedulerService.testarNotificacao(+usuarioId);
     }
 }

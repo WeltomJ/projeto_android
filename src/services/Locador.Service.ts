@@ -49,8 +49,9 @@ export const LocadorService = {
 
             const { accessToken, refreshToken, user } = response.data;
 
-            await AsyncStorage.setItem('accessToken', accessToken);
-            await AsyncStorage.setItem('refreshToken', refreshToken);
+            // Salvar com prefixo 'locador' para não conflitar com o usuário comum
+            await AsyncStorage.setItem('locadorToken', accessToken);
+            await AsyncStorage.setItem('locadorRefreshToken', refreshToken);
             await AsyncStorage.setItem('locador', JSON.stringify(user));
 
             return response.data;
@@ -101,7 +102,7 @@ export const LocadorService = {
     async remover(id: number): Promise<void> {
         try {
             await api.delete(`/locador/${id}`);
-            await AsyncStorage.multiRemove(['accessToken', 'refreshToken', 'locador']);
+            await AsyncStorage.multiRemove(['locadorToken', 'locadorRefreshToken', 'locador']);
         } catch (error: any) {
             throw new ApiError(
                 error.response?.data?.message || 'Erro ao remover locador',
@@ -112,11 +113,63 @@ export const LocadorService = {
     },
 
     async logout(): Promise<void> {
-        await AsyncStorage.multiRemove(['accessToken', 'refreshToken', 'locador']);
+        await AsyncStorage.multiRemove(['locadorToken', 'locadorRefreshToken', 'locador']);
     },
 
     async obterLocadorLogado(): Promise<Locador | null> {
         const locador = await AsyncStorage.getItem('locador');
         return locador ? JSON.parse(locador) : null;
+    },
+
+    async atualizarFoto(id: number, fotoUri: string): Promise<Locador> {
+        try {
+            const formData = new FormData();
+            
+            const filename = fotoUri.split('/').pop() || 'foto';
+            const match = /\.(\w+)$/.exec(filename);
+            const type = match ? `image/${match[1]}` : 'image/jpeg';
+
+            formData.append('foto', {
+                uri: fotoUri,
+                name: filename,
+                type,
+            } as any);
+
+            const response = await api.post<Locador>(`/locador/${id}/foto`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            // Atualizar AsyncStorage
+            const locador = await AsyncStorage.getItem('locador');
+            if (locador) {
+                const locadorData = JSON.parse(locador);
+                if (locadorData.id === id) {
+                    await AsyncStorage.setItem('locador', JSON.stringify(response.data));
+                }
+            }
+
+            return response.data;
+        } catch (error: any) {
+            throw new ApiError(
+                error.response?.data?.message || 'Erro ao atualizar foto',
+                error.response?.status || 500,
+                error.response?.data
+            );
+        }
+    },
+
+    async listar(): Promise<Locador[]> {
+        try {
+            const response = await api.get<Locador[]>('/locador');
+            return response.data;
+        } catch (error: any) {
+            throw new ApiError(
+                error.response?.data?.message || 'Erro ao listar locadores',
+                error.response?.status || 500,
+                error.response?.data
+            );
+        }
     },
 };

@@ -6,5 +6,6 @@ export interface Lembrete {
     descricao?: string;
     lembrar_em: string;
     concluido: boolean;
+    notificado: boolean;
     criado_em?: string;
 }

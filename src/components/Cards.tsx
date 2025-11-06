@@ -1,173 +1,390 @@
-import React, { useRef } from 'react';
-import { Animated, PanResponder, StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+    StyleSheet,
+    Text,
+    View,
+    Image,
+    TouchableOpacity,
+    ActivityIndicator,
+    Alert,
+    Dimensions
+} from 'react-native';
+import Swiper from 'react-native-deck-swiper';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useNavigation } from '@react-navigation/native';
+import { LocalService } from '../services/Local.Service';
+import { FavoritoService } from '../services/Favorito.Service';
+import { Local } from '../../types/Local';
+import { useAuth } from '../utils/AuthContext';
+import { useTheme } from '../utils/ThemeContext';
+import { URL_UPLOADS } from '@env';
 
-interface Card {
-  id: string;
-  title: string;
-  description: string;
-  image: any; // agora aceita require()
-}
-
-// Utilize require() para imagens locais na pasta assets/images
-const data: Card[] = [
-  { 
-    id: '1', 
-    title: 'Festival Amazonas de Ópera', 
-    description: 'Um dos maiores eventos de ópera do Brasil, realizado no majestoso Teatro Amazonas.', 
-    image: require('../../assets/manaus.jpg') 
-  },
-  { 
-    id: '2', 
-    title: 'Carnaval de Manaus', 
-    description: 'A explosão de cores e ritmos no Sambódromo, com desfiles de Escolas de Samba e blocos de rua.', 
-    image: require('../../assets/WhatsApp-Image-2024-12-11-at-11.32.39-1024x682.jpeg') 
-  },
-  { 
-    id: '3', 
-    title: 'Boi Manaus', 
-    description: 'Celebração da cultura Boi-Bumbá com shows de artistas locais, aquecendo para Parintins.', 
-    image: require('../../assets/3af8c85302d8abd52642c9d148711ba1.jpg') 
-  },
-  { 
-    id: '4', 
-    title: 'Festa teste', 
-    description: 'local : rua cristovão colombo\nvalor:30 reais', 
-    image: require('../../assets/4fa024953c01f8f3328168cc8db1a15c.jpg') 
-  },
-  { 
-    id: '5', 
-    title: 'Festa de São João em Manaus', 
-    description: 'As tradicionais festas juninas com comidas típicas amazônicas, quadrilhas e muita animação regional.', 
-    image: require('../../assets/8b7de8d210ffbf7b5ca684701e71e208.jpg') 
-  },
-  { 
-    id: '6', 
-    title: 'Festa do Cupuaçu', 
-    description: 'Celebração gastronômica do fruto amazônico, com pratos, doces e shows (em Rio Preto da Eva, perto de Manaus).', 
-    image: require('../../assets/8b7de8d210ffbf7b5ca684701e71e208.jpg') 
-  },
-  { 
-    id: '7', 
-    title: 'Réveillon na Ponta Negra', 
-    description: 'Grande festa de virada do ano na praia da Ponta Negra, com shows e fogos de artifício no Rio Negro.', 
-    image: require('../../assets/65949f240955c.png') 
-  },
-  { 
-    id: '8', 
-    title: 'Feira do Produtor/Gastronômica', 
-    description: 'Eventos que destacam a culinária e produtos regionais, como no Mercado Adolpho Lisboa ou feiras itinerantes.', 
-    image: require('../../assets/713077fac30d4e350ca6f5e4793ff1ae.jpg') 
-  },
-];
-
-const SWIPE_THRESHOLD = 120;
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const Cards: React.FC = () => {
-  const position = useRef(new Animated.ValueXY()).current;
-  const [index, setIndex] = React.useState(0);
+    const [cardIndex, setCardIndex] = useState(0);
+    const [locais, setLocais] = useState<Local[]>([]);
+    const [loading, setLoading] = useState(true);
+    const navigation = useNavigation<any>();
+    const { user } = useAuth();
+    const { theme } = useTheme();
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 5 || Math.abs(g.dy) > 5,
-      onPanResponderMove: Animated.event([null, { dx: position.x, dy: position.y }], { useNativeDriver: false }),
-      onPanResponderRelease: (_, g) => {
-        if (Math.abs(g.dx) > SWIPE_THRESHOLD) swipeCard(g.dx > 0 ? 1 : -1, g.dy);
-        else Animated.spring(position, { toValue: { x: 0, y: 0 }, useNativeDriver: true, friction: 5 }).start();
-      },
-    })
-  ).current;
+    useEffect(() => {
+        carregarLocais();
+    }, []);
 
-  const swipeCard = (direction: number, dy: number = 0) => {
-    Animated.timing(position, {
-      toValue: { x: direction > 0 ? 500 : -500, y: dy },
-      duration: 250,
-      useNativeDriver: true,
-    }).start(() => {
-      position.setValue({ x: 0, y: 0 });
-      setIndex(i => i + 1);
-    });
-  };
+    const carregarLocais = async () => {
+        try {
+            setLoading(true);
+            const dados = await LocalService.listar();
 
-  const renderCards = () =>
-    data
-      .slice(index)
-      .map((card, i) => {
-        const isTop = i === 0;
-        const rotate = position.x.interpolate({ inputRange: [-300, 0, 300], outputRange: ['-15deg', '0deg', '15deg'] });
-        const style = isTop
-          ? { transform: [...position.getTranslateTransform(), { rotate }] }
-          : { display: 'none' }; // cards atrás não aparecem
+            const locaisEmbaralhados = dados.sort(() => Math.random() - 0.5);
+            setLocais(locaisEmbaralhados);
+            setCardIndex(0); // Resetar o índice quando recarregar
+        } catch (e: any) {
+            console.error('Erro ao carregar locais:', e);
+            Alert.alert('Erro', 'Não foi possível carregar os locais');
+            setLocais([]);
+            setCardIndex(0);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+    const onSwiped = () => setCardIndex((i) => i + 1);
+
+    const onSwipedLeft = () => {
+    };
+
+    const onSwipedRight = async (indexRight: number) => {
+        const currentLocal = locais[indexRight];
+        if (!currentLocal) return;
+        if (!user?.id) return; // usuário não logado
+
+        try {
+            await FavoritoService.adicionar({
+                usuario_id: user.id,
+                local_id: currentLocal.id,
+            });
+        } catch (error: any) {
+            const status = error?.status || error?.statusCode || error?.response?.status;
+            const erro = error?.response?.error ? error?.response?.error : null;
+            if (status !== 409 && erro == "Conflict") {
+                Alert.alert('Erro ao favoritar', erro || 'Não foi possível adicionar aos favoritos.');
+            }
+        }
+    };
+    const abrirDetalhes = useCallback(() => {
+        const currentLocal = locais[cardIndex];
+        if (currentLocal) {
+            navigation.navigate('LocalDetails', { localId: currentLocal.id });
+        }
+    }, [cardIndex, locais, navigation]);
+
+    const calcularMediaAvaliacoes = (local: Local): number => {
+        if (!local.avaliacoes || local.avaliacoes.length === 0) return 0;
+        const soma = local.avaliacoes.reduce((acc, av) => acc + av.nota, 0);
+        return parseFloat((soma / local.avaliacoes.length).toFixed(1));
+    };
+
+    const getImagemPrincipal = (local: Local) => {
+        if (local.medias && local.medias.length > 0) {
+            const primeiraImagem = local.medias.find(m => m.tipo === 'IMG');
+            if (primeiraImagem) {
+                return { uri: `${URL_UPLOADS}/${primeiraImagem.url}` };
+            }
+        }
+        // Imagem placeholder - sem imagem
+        return { uri: 'https://via.placeholder.com/400x600/cccccc/666666?text=Sem+Imagem' };
+    };
+
+    const renderCard = (local?: Local) => {
+        if (!local) return <View />;
+        const mediaAvaliacao = calcularMediaAvaliacoes(local);
 
         return (
-          <Animated.View
-            key={card.id}
-            style={[styles.card, style as any, { zIndex: data.length - i }]}
-            {...(isTop ? panResponder.panHandlers : {})}
-          >
-            <Image source={card.image} style={styles.cardImage} />
+            <View style={styles.card}>
+                <TouchableOpacity activeOpacity={0.9} onPress={abrirDetalhes} style={styles.cardTouchable}>
+                    <Image source={getImagemPrincipal(local)} style={styles.cardImage} resizeMode="cover" />
+                    <LinearGradient colors={['transparent', 'rgba(0,0,0,0.4)', 'rgba(0,0,0,0.9)']} style={styles.gradientOverlay}>
+                        <View style={styles.cardInfo}>
+                            <View style={styles.cardHeader}>
+                                <Text style={styles.cardTitle} numberOfLines={2}>
+                                    {local.nome}
+                                </Text>
+                                {mediaAvaliacao > 0 && (
+                                    <View style={styles.ratingBadge}>
+                                        <Text style={styles.ratingText}>⭐ {mediaAvaliacao}</Text>
+                                    </View>
+                                )}
+                            </View>
 
-            {/* Gradiente para legibilidade do texto */}
-            <LinearGradient
-              colors={['transparent', 'rgba(0,0,0,0.6)', 'rgba(0,0,0,0.8)']}
-              style={styles.gradientOverlay}
-            >
-              <View style={styles.cardInfo}>
-                <Text style={styles.cardTitle}>{card.title}</Text>
-                <Text style={styles.cardDescription}>{card.description}</Text>
-              </View>
-            </LinearGradient>
-          </Animated.View>
+                            <Text style={styles.cardLocation} numberOfLines={1}>
+                                📍 {local.endereco_cidade}, {local.endereco_estado}
+                            </Text>
+
+                            {local.descricao && (
+                                <Text style={styles.cardDescription} numberOfLines={3}>
+                                    {local.descricao}
+                                </Text>
+                            )}
+
+                            <View style={styles.badgesContainer}>
+                                {local.avaliacoes && local.avaliacoes.length > 0 && (
+                                    <View style={styles.infoBadge}>
+                                        <Text style={styles.infoBadgeText}>💬 {local.avaliacoes.length} avaliações</Text>
+                                    </View>
+                                )}
+                                {local.medias && local.medias.length > 1 && (
+                                    <View style={styles.infoBadge}>
+                                        <Text style={styles.infoBadgeText}>📸 {local.medias.length} fotos</Text>
+                                    </View>
+                                )}
+                            </View>
+
+                            <TouchableOpacity style={styles.detailsButton} onPress={abrirDetalhes}>
+                                <Text style={styles.detailsButtonText}>Ver Detalhes 👉</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </LinearGradient>
+                </TouchableOpacity>
+            </View>
         );
-      })
-      .reverse();
+    };
 
-  return (
-    <View style={styles.container}>
-      {renderCards()}
+    if (loading) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color={theme.primary} />
+                <Text style={[styles.loadingText, { color: theme.text }]}>Carregando locais...</Text>
+            </View>
+        );
+    }
 
-      {/* Botões fora do card */}
-      <View style={styles.buttonsContainer}>
-        <TouchableOpacity style={[styles.button, { backgroundColor: 'red' }]} onPress={() => swipeCard(-1)}>
-          <Text style={styles.buttonText}>✖️</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.button, { backgroundColor: 'green' }]} onPress={() => swipeCard(1)}>
-          <Text style={styles.buttonText}>❤️</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+    if (locais.length === 0 || cardIndex >= locais.length) {
+        return (
+            <View style={styles.emptyContainer}>
+                <Text style={[styles.emptyTitle, { color: theme.text }]}>🎉 Você viu todos os locais!</Text>
+                <Text style={[styles.emptySubtitle, { color: theme.text }]}>Volte mais tarde para ver novos lugares</Text>
+                <TouchableOpacity style={[styles.reloadButton, { backgroundColor: theme.primary }]} onPress={carregarLocais}>
+                    <Text style={styles.reloadButtonText}>🔄 Recarregar</Text>
+                </TouchableOpacity>
+            </View>
+        );
+    }
+
+    return (
+        <View style={styles.container}>
+            <Swiper
+                cards={locais}
+                cardIndex={cardIndex}
+                renderCard={renderCard}
+                backgroundColor="transparent"
+                stackSize={2}
+                stackSeparation={12}
+                animateCardOpacity
+                disableBottomSwipe
+                disableTopSwipe
+                verticalSwipe={false}
+                cardStyle={styles.card}
+                onSwiped={onSwiped}
+                onSwipedLeft={onSwipedLeft}
+                onSwipedRight={onSwipedRight}
+                onSwipedAll={() => setCardIndex(locais.length)}
+                outputRotationRange={["-15deg", "0deg", "15deg"]}
+                useViewOverflow={false}
+                cardVerticalMargin={40}
+                cardHorizontalMargin={20}
+                marginTop={0}
+                marginBottom={0}
+                containerStyle={styles.swiperContainer}
+            />
+        </View>
+    );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  card: {
-    position: 'absolute',
-    width: '108%',
-    height: '85%',
-    borderRadius: 16,
-    overflow: 'hidden',
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 4 },
-  },
-  cardImage: { width: '100%', height: '100%' },
-  gradientOverlay: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: '40%',
-    justifyContent: 'flex-end',
-  },
-  cardInfo: { padding: 16 },
-  cardTitle: { fontSize: 22, fontWeight: '700', color: '#fff' },
-  cardDescription: { fontSize: 16, color: '#fff', marginTop: 4 },
-  buttonsContainer: { position: 'absolute', bottom: 40, flexDirection: 'row', justifyContent: 'space-around', width: '80%' },
-  button: { width: 70, height: 50, borderRadius: 25, alignItems: 'center', justifyContent: 'center' },
-  buttonText: { color: '#fff', fontSize: 22, fontWeight: 'bold' },
+    container: {
+        flex: 1,
+        backgroundColor: 'transparent',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    swiperContainer: {
+        flex: 1,
+        width: SCREEN_WIDTH,
+    },
+    card: {
+        width: SCREEN_WIDTH * 0.9,
+        height: SCREEN_HEIGHT * 0.7,
+        borderRadius: 20,
+        overflow: 'hidden',
+        elevation: 8,
+        shadowColor: '#000',
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 5 },
+        backgroundColor: '#fff',
+    },
+    cardTouchable: {
+        flex: 1,
+    },
+    cardImage: {
+        width: '100%',
+        height: '100%',
+        backgroundColor: '#f0f0f0',
+    },
+    gradientOverlay: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        bottom: 0,
+        height: '50%',
+        justifyContent: 'flex-end',
+        paddingBottom: 20,
+    },
+    cardInfo: {
+        padding: 20,
+    },
+    cardHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: 8,
+    },
+    cardTitle: {
+        fontSize: 28,
+        fontWeight: '700',
+        color: '#fff',
+        flex: 1,
+        marginRight: 10,
+    },
+    cardLocation: {
+        fontSize: 16,
+        color: '#fff',
+        marginBottom: 8,
+        opacity: 0.9,
+    },
+    cardDescription: {
+        fontSize: 15,
+        color: '#fff',
+        marginTop: 8,
+        lineHeight: 22,
+        opacity: 0.95,
+    },
+    ratingBadge: {
+        backgroundColor: 'rgba(255,255,255,0.25)',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 20,
+    },
+    ratingText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    badgesContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        marginTop: 12,
+        gap: 8,
+    },
+    infoBadge: {
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        borderRadius: 15,
+    },
+    infoBadgeText: {
+        color: '#fff',
+        fontSize: 13,
+        fontWeight: '500',
+    },
+    detailsButton: {
+        backgroundColor: 'rgba(255,255,255,0.25)',
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+        borderRadius: 25,
+        marginTop: 15,
+        alignItems: 'center',
+    },
+    detailsButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    likeLabel: {
+        position: 'absolute',
+        top: 50,
+        right: 40,
+        transform: [{ rotate: '30deg' }],
+        borderWidth: 5,
+        borderColor: '#4CAF50',
+        borderRadius: 10,
+        padding: 10,
+        zIndex: 1000,
+    },
+    likeLabelText: {
+        fontSize: 32,
+        fontWeight: 'bold',
+        color: '#4CAF50',
+    },
+    nopeLabel: {
+        position: 'absolute',
+        top: 50,
+        left: 40,
+        transform: [{ rotate: '-30deg' }],
+        borderWidth: 5,
+        borderColor: '#F44336',
+        borderRadius: 10,
+        padding: 10,
+        zIndex: 1000,
+    },
+    nopeLabelText: {
+        fontSize: 32,
+        fontWeight: 'bold',
+        color: '#F44336',
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    loadingText: {
+        marginTop: 16,
+        fontSize: 16,
+        fontWeight: '500',
+    },
+    emptyContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 40,
+    },
+    emptyTitle: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginBottom: 12,
+        textAlign: 'center',
+    },
+    emptySubtitle: {
+        fontSize: 16,
+        textAlign: 'center',
+        opacity: 0.7,
+        marginBottom: 24,
+    },
+    reloadButton: {
+        paddingVertical: 14,
+        paddingHorizontal: 32,
+        borderRadius: 25,
+        elevation: 3,
+    },
+    reloadButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '600',
+    },
 });
 
 export default Cards;

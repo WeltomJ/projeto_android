@@ -15,10 +15,12 @@ import { useTheme } from '../utils/ThemeContext';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import ErrorModal from '../components/ErrorModal';
+import { GoogleAuthService } from '../services/GoogleAuth.Service';
+import { FontAwesome } from '@expo/vector-icons';
 
 export default function RegisterScreen() {
     const navigation = useNavigation();
-    const { signUp, loading } = useAuth();
+    const { signUp, loading, setUser, setToken } = useAuth();
     const { theme } = useTheme();
 
     const [nome, setNome] = useState('');
@@ -76,6 +78,28 @@ export default function RegisterScreen() {
 
     const goToLogin = () => {
         navigation.navigate('Login' as never);
+    };
+
+    const handleGoogleSignUp = async () => {
+        try {
+            setIsLoading(true);
+            setError(null);
+
+            const response = await GoogleAuthService.signIn('usuario');
+            
+            // Salvar token e usuário no contexto
+            await setToken(response.accessToken);
+            await setUser(response.user);
+        } catch (err: any) {
+            console.error('Erro no cadastro com Google:', err);
+            if (err?.code === 'ERR_CANCELED' || err?.message?.includes('SIGN_IN_CANCELLED')) {
+                // Usuário cancelou o login
+                return;
+            }
+            setError(err?.message || 'Erro ao cadastrar com Google');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -143,6 +167,23 @@ export default function RegisterScreen() {
                             onPress={handleRegister}
                             disabled={isLoading || loading}
                         />
+
+                        <View style={styles.divider}>
+                            <View style={[styles.dividerLine, { backgroundColor: theme.border }]} />
+                            <Text style={[styles.dividerText, { color: theme.textSecondary }]}>ou</Text>
+                            <View style={[styles.dividerLine, { backgroundColor: theme.border }]} />
+                        </View>
+
+                        <TouchableOpacity
+                            style={[styles.googleButton, { backgroundColor: theme.surface, borderColor: theme.border }]}
+                            onPress={handleGoogleSignUp}
+                            disabled={isLoading || loading}
+                        >
+                            <FontAwesome name="google" size={20} color="#DB4437" />
+                            <Text style={[styles.googleButtonText, { color: theme.text }]}>
+                                Cadastrar com Google
+                            </Text>
+                        </TouchableOpacity>
 
                         {(isLoading || loading) && (
                             <ActivityIndicator
@@ -216,5 +257,31 @@ const styles = StyleSheet.create({
     linkText: {
         fontSize: 14,
         fontWeight: 'bold',
+    },
+    divider: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginVertical: 20,
+    },
+    dividerLine: {
+        flex: 1,
+        height: 1,
+    },
+    dividerText: {
+        marginHorizontal: 12,
+        fontSize: 14,
+    },
+    googleButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 14,
+        borderRadius: 8,
+        borderWidth: 1,
+        gap: 12,
+    },
+    googleButtonText: {
+        fontSize: 16,
+        fontWeight: '600',
     },
 });

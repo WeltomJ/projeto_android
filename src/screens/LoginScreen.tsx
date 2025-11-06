@@ -8,7 +8,7 @@ import {
     KeyboardAvoidingView,
     Platform,
     ScrollView,
-    Image, 
+    Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../utils/AuthContext';
@@ -17,12 +17,14 @@ import Input from '../components/Input';
 import Button from '../components/Button';
 import ErrorModal from '../components/ErrorModal';
 import ThemeToggle from '../components/ThemeToggle';
+import { GoogleAuthService } from '../services/GoogleAuth.Service';
+import { FontAwesome } from '@expo/vector-icons';
 
 const AppLogo = require('../../assets/logo_2.png');
 
 export default function LoginScreen() {
     const navigation = useNavigation();
-    const { signIn, loading } = useAuth();
+    const { signIn, loading, setUser, setToken } = useAuth();
     const { theme } = useTheme();
 
     const [email, setEmail] = useState('');
@@ -52,8 +54,32 @@ export default function LoginScreen() {
         }
     };
 
+    const handleGoogleLogin = async () => {
+        try {
+            setIsLoading(true);
+            setError(null);
+
+            const response = await GoogleAuthService.signIn('usuario');
+
+            await setToken(response.accessToken);
+            await setUser(response.user);
+        } catch (err: any) {
+            console.error('Erro no login com Google:', err);
+            if (err?.code === 'ERR_CANCELED' || err?.message?.includes('SIGN_IN_CANCELLED')) {
+                return;
+            }
+            setError(err?.message || 'Erro ao fazer login com Google');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const goToRegister = () => {
         navigation.navigate('Register' as never);
+    };
+
+    const goBack = () => {
+        navigation.navigate('Welcome' as never);
     };
 
     return (
@@ -66,14 +92,18 @@ export default function LoginScreen() {
                 keyboardShouldPersistTaps="handled"
             >
                 <View style={styles.content}>
+                    <TouchableOpacity onPress={goBack} style={styles.backButton}>
+                        <FontAwesome name="arrow-left" size={24} color={theme.text} />
+                    </TouchableOpacity>
+                    
                     <ThemeToggle />
                     <Image
-                      source={AppLogo}
-                      style={styles.logo}
-                       resizeMode="contain"
+                        source={AppLogo}
+                        style={styles.logo}
+                        resizeMode="contain"
                     />
 
-                    
+
                     <Text style={[styles.title, { color: theme.text }]}>Bem-vindo</Text>
                     <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
                         Faça login para continuar
@@ -104,6 +134,23 @@ export default function LoginScreen() {
                             onPress={handleLogin}
                             disabled={isLoading || loading}
                         />
+
+                        <View style={styles.divider}>
+                            <View style={[styles.dividerLine, { backgroundColor: theme.border }]} />
+                            <Text style={[styles.dividerText, { color: theme.textSecondary }]}>ou</Text>
+                            <View style={[styles.dividerLine, { backgroundColor: theme.border }]} />
+                        </View>
+
+                        <TouchableOpacity
+                            style={[styles.googleButton, { backgroundColor: theme.surface, borderColor: theme.border }]}
+                            onPress={handleGoogleLogin}
+                            disabled={isLoading || loading}
+                        >
+                            <FontAwesome name="google" size={20} color="#DB4437" />
+                            <Text style={[styles.googleButtonText, { color: theme.text }]}>
+                                Continuar com Google
+                            </Text>
+                        </TouchableOpacity>
 
                         {(isLoading || loading) && (
                             <ActivityIndicator
@@ -147,15 +194,15 @@ const styles = StyleSheet.create({
         flex: 1,
         padding: 24,
         justifyContent: 'center',
-        
+
     },
-   logo: {
-  width: 600,
-  height: 280,
-  position: 'absolute',
-  top: 90,           // distância do topo da tela
-  alignSelf: 'center',
-},
+    logo: {
+        width: 600,
+        height: 280,
+        position: 'absolute',
+        top: 90,
+        alignSelf: 'center',
+    },
     title: {
         fontSize: 32,
         fontWeight: 'bold',
@@ -185,5 +232,38 @@ const styles = StyleSheet.create({
     linkText: {
         fontSize: 14,
         fontWeight: 'bold',
+    },
+    backButton: {
+        position: 'absolute',
+        top: 50,
+        left: 10,
+        zIndex: 10,
+        padding: 10,
+    },
+    divider: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginVertical: 20,
+    },
+    dividerLine: {
+        flex: 1,
+        height: 1,
+    },
+    dividerText: {
+        marginHorizontal: 12,
+        fontSize: 14,
+    },
+    googleButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 14,
+        borderRadius: 8,
+        borderWidth: 1,
+        gap: 12,
+    },
+    googleButtonText: {
+        fontSize: 16,
+        fontWeight: '600',
     },
 });

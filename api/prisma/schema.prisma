@@ -8,14 +8,17 @@ datasource db {
 }
 
 model usuario {
-    id            Int      @id @default(autoincrement())
-    email         String   @unique
-    nome          String
-    senha         String?  @db.Text
-    telefone      String?
-    foto          String?  @db.Text
-    criado_em     DateTime @default(now())
-    atualizado_em DateTime @updatedAt
+    id             Int      @id @default(autoincrement())
+    email          String   @unique
+    nome           String
+    senha          String?  @db.Text
+    telefone       String?
+    foto           String?  @db.Text
+    google_id      String?  @unique
+    provider       String?  @default("local") // 'local', 'google', 'facebook', etc.
+    expo_push_token String? @db.Text
+    criado_em      DateTime @default(now())
+    atualizado_em  DateTime @updatedAt
 
     avaliacoes   avaliacao[]
     lembretes    lembrete[]
@@ -29,6 +32,8 @@ model locador {
     senha         String?  @db.Text
     telefone      String?
     foto          String?  @db.Text
+    google_id     String?  @unique
+    provider      String?  @default("local") // 'local', 'google'
     criado_em     DateTime @default(now())
     atualizado_em DateTime @updatedAt
 
@@ -108,12 +113,14 @@ model lembrete {
     descricao  String?  @db.Text
     lembrar_em DateTime
     concluido  Boolean  @default(false)
+    notificado Boolean  @default(false)
     criado_em  DateTime @default(now())
 
     usuario usuario @relation(fields: [usuario_id], references: [id])
     local   local?  @relation(fields: [local_id], references: [id])
 
     @@index([usuario_id])
+    @@index([lembrar_em])
 }
 
 model favorito {

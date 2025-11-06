@@ -5,6 +5,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, StatusBar } from 'react-native';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 
+import WelcomeScreen from '../screens/WelcomeScreen';
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
 import HomeScreen from '../screens/HomeScreen';
@@ -13,7 +14,17 @@ import SettingsScreen from '../screens/SettingsScreen';
 import ProfileEditScreen from '../screens/ProfileEditScreen';
 import FavoritesScreen from '../screens/FavoritesScreen';
 
+// Telas do Locador
+import LocadorLoginScreen from '../screens/LocadorLoginScreen';
+import LocadorRegisterScreen from '../screens/LocadorRegisterScreen';
+import LocadorHomeScreen from '../screens/LocadorHomeScreen';
+import LocadorEditProfileScreen from '../screens/LocadorEditProfileScreen';
+import LocadorAddLocalScreen from '../screens/LocadorAddLocalScreen';
+import LocadorEditLocalScreen from '../screens/LocadorEditLocalScreen';
+import LocalDetailsScreen from '../screens/LocalDetailsScreen';
+
 import { useAuth } from '../utils/AuthContext';
+import { useLocador } from '../utils/LocadorContext';
 import { useTheme } from '../utils/ThemeContext';
 
 const Stack = createStackNavigator();
@@ -94,9 +105,10 @@ const MainTabs = () => {
 
 const AppNavigator: React.FC = () => {
     const { user, hydrated } = useAuth();
+    const { locador, loading: locadorLoading } = useLocador();
     const { theme, isDark } = useTheme();
 
-    if (!hydrated) {
+    if (!hydrated || locadorLoading) {
         return null;
     }
 
@@ -117,11 +129,24 @@ const AppNavigator: React.FC = () => {
                         <>
                             <Stack.Screen name="MainTabs" component={MainTabs} />
                             <Stack.Screen name="ProfileEdit" component={ProfileEditScreen} />
+                            <Stack.Screen name="LocalDetails" component={LocalDetailsScreen} />
+                        </>
+                    ) : locador ? (
+                        <>
+                            <Stack.Screen name="LocadorHome" component={LocadorHomeScreen} />
+                            <Stack.Screen name="LocadorEditProfile" component={LocadorEditProfileScreen} />
+                            <Stack.Screen name="LocadorAddLocal" component={LocadorAddLocalScreen} />
+                            <Stack.Screen name="LocadorEditLocal" component={LocadorEditLocalScreen} />
                         </>
                     ) : (
                         <>
+                            <Stack.Screen name="Welcome" component={WelcomeScreen} />
                             <Stack.Screen name="Login" component={LoginScreen} />
                             <Stack.Screen name="Register" component={RegisterScreen} />
+                            
+                            {/* Rotas do Locador */}
+                            <Stack.Screen name="LocadorLogin" component={LocadorLoginScreen} />
+                            <Stack.Screen name="LocadorRegister" component={LocadorRegisterScreen} />
                         </>
                     )}
                 </Stack.Navigator>

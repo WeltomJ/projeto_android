@@ -37,4 +37,9 @@ export class UsuarioController {
         return await this.usuarioService.login(body.email, body.senha);
     }
 
+    @Put(':id/expo-token')
+    async updateExpoPushToken(@Param('id') id: string, @Body() body: { expoPushToken: string }) {
+        return await this.usuarioService.updateExpoPushToken(Number(id), body.expoPushToken);
+    }
+
 }

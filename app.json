@@ -1,53 +1,63 @@
 {
-    "expo": {
-        "name": "projeto_android",
-        "slug": "projeto_android",
-        "version": "1.0.0",
-        "orientation": "portrait",
-        "icon": "./assets/icon.png",
-        "userInterfaceStyle": "light",
-        "newArchEnabled": true,
-        "splash": {
-            "image": "./assets/splash-icon.png",
-            "resizeMode": "contain",
-            "backgroundColor": "#ffffff"
-        },
-        "ios": {
-            "supportsTablet": true,
-            "infoPlist": {
-                "NSLocationWhenInUseUsageDescription": "Permitir que o Onde é, Manaus? acesse sua localização enquanto você usa o app"
-            }
-        },
-        "android": {
-            "adaptiveIcon": {
-                "foregroundImage": "./assets/adaptive-icon.png",
-                "backgroundColor": "#ffffff"
-            },
-            "edgeToEdgeEnabled": true,
-            "predictiveBackGestureEnabled": false,
-            "package": "com.weltom.projeto_android",
-            "config": {
-                "googleMaps": {
-                    "apiKey": "AIzaSyCB97u3hfaDm1-14-f_0wgfSoysGlXfKFo"
-                }
-            }
-        },
-        "web": {
-            "favicon": "./assets/favicon.png"
-        },
-        "extra": {
-            "eas": {
-                "projectId": "7aea49ea-cb75-4f9a-bbf8-42768413fce4"
-            }
-        },
-        "plugins": [
-            [
-                "expo-maps",
-                {
-                    "requestLocationPermission": true,
-                    "locationPermission": "Permitir que o Onde é, Manaus? acesse sua localização enquanto você usa o app"
-                }
-            ]
-        ]
-    }
+  "expo": {
+    "name": "projeto_android",
+    "slug": "projeto_android",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Permitir que o Onde é, Manaus? acesse sua localização enquanto você usa o app",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "config": {
+        "googleMapsApiKey": "AIzaSyCC6fqFNysfALdEPcT8ZyfM1qG5Sgr3cwc"
+      },
+      "bundleIdentifier": "com.weltom.projetoandroid"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
+      "package": "com.weltom.projeto_android",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyCB97u3hfaDm1-14-f_0wgfSoysGlXfKFo"
+        }
+      },
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "7aea49ea-cb75-4f9a-bbf8-42768413fce4"
+      }
+    },
+    "plugins": [
+      [
+        "expo-maps",
+        {
+          "requestLocationPermission": true,
+          "locationPermission": "Permitir que o Onde é, Manaus? acesse sua localização enquanto você usa o app"
+        }
+      ],
+      "@react-native-google-signin/google-signin"
+    ]
+  }
 }
